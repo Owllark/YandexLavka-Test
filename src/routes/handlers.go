@@ -28,11 +28,38 @@ func getCourierMetaInfo() {
 // takes echo.Context as an argument and returns response 200 with json encoded array of courier data
 // or 400 (BadRequest) in case of error
 func getCouriers(ctx echo.Context) error {
+	offsetStr := ctx.QueryParam("offset")
+	limitStr := ctx.QueryParam("limit")
+	var offset, limit int
+	var err error
+	if offsetStr == "" {
+		offset = 0
+	} else {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil || offset < 0 {
+			return echo.NewHTTPError(400)
+		}
+	}
+	if limitStr == "" {
+		limit = 1
+	} else {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil || limit < 0 {
+			return echo.NewHTTPError(400)
+		}
+	}
+
 	couriersData, err := database.GetCouriers()
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
-	return ctx.JSON(200, couriersData)
+	if offset >= len(couriersData) {
+		return ctx.NoContent(200)
+	}
+	if offset+limit > len(couriersData) {
+		return ctx.JSON(200, couriersData[offset:])
+	}
+	return ctx.JSON(200, couriersData[offset:offset+limit])
 
 }
 
@@ -61,12 +88,41 @@ func createCourier(ctx echo.Context) error {
 // takes echo.Context as an argument and returns response 200 with json encoded array of order data
 // or 400 (BadRequest) in case of error
 func getOrders(ctx echo.Context) error {
-
+	offsetStr := ctx.QueryParam("offset")
+	limitStr := ctx.QueryParam("limit")
+	var offset, limit int
+	var err error
+	if offsetStr == "" {
+		offset = 0
+	} else {
+		offset, err = strconv.Atoi(offsetStr)
+		if err != nil || offset < 0 {
+			return echo.NewHTTPError(400)
+		}
+	}
+	if limitStr == "" {
+		limit = 1
+	} else {
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil || limit < 0 {
+			return echo.NewHTTPError(400)
+		}
+	}
 	ordersData, err := database.GetOrders()
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
-	return ctx.JSON(200, ordersData)
+
+	if err != nil {
+		return echo.NewHTTPError(400)
+	}
+	if offset >= len(ordersData) {
+		return ctx.NoContent(200)
+	}
+	if offset+limit > len(ordersData) {
+		return ctx.JSON(200, ordersData[offset:])
+	}
+	return ctx.JSON(200, ordersData[offset:offset+limit])
 }
 
 // getOrderByID handles GET /orders/:order_id request
