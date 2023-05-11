@@ -1,7 +1,8 @@
-package db
+package sql_db
 
 import (
 	"database/sql"
+	"fmt"
 	_ "github.com/lib/pq"
 )
 
@@ -10,8 +11,8 @@ type PostgreSQLDatabase struct {
 	PostgreSQLQuery
 }
 
-func (p *PostgreSQLDatabase) Connect() error {
-	db, err := sql.Open("postgres", "user=postgres password=password dbname=lavka host=localhost sslmode=disable")
+func (p *PostgreSQLDatabase) Connect(user, password, dbname, host string) error {
+	db, err := sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", user, password, dbname, host))
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@ package schemas
 
 type CreateOrderDto struct {
 	Weight        float32  `json:"weight,omitempty"`
-	Regions       int32    `json:"regions,omitempty"`
+	Region        int32    `json:"region,omitempty"`
 	DeliveryHours []string `json:"delivery___hours,omitempty"`
 	Cost          int32    `json:"cost,omitempty"`
 }
@@ -14,7 +14,7 @@ type CreateOrderRequest struct {
 type OrderDto struct {
 	OrderId       int64    `json:"order_id"`
 	Weight        float32  `json:"weight,omitempty"`
-	Regions       int32    `json:"regions,omitempty"`
+	Region        int32    `json:"region,omitempty"`
 	DeliveryHours []string `json:"delivery___hours,omitempty"`
 	Cost          int32    `json:"cost,omitempty"`
 	CompletedTime string   `json:"completed___time,omitempty"`
@@ -56,7 +56,7 @@ const (
 
 type CreateCourierDto struct {
 	CourierType  string   `json:"courier_type,omitempty"`
-	Regions      int32    `json:"regions,omitempty"`
+	Regions      []int32  `json:"regions,omitempty"`
 	WorkingHours []string `json:"working_hours,omitempty"`
 }
 
@@ -64,10 +64,14 @@ type CreateCourierRequest struct {
 	Couriers []CreateCourierDto `json:"couriers,omitempty"`
 }
 
+type CreateCourierResponse struct {
+	Couriers []CourierDto `json:"couriers,omitempty"`
+}
+
 type CourierDto struct {
 	CourierId    int64    `json:"courier_id,omitempty"`
 	CourierType  string   `json:"courier_type,omitempty"`
-	Regions      int32    `json:"regions,omitempty"`
+	Regions      []int32  `json:"regions,omitempty"`
 	WorkingHours []string `json:"working_hours,omitempty"`
 }
 
