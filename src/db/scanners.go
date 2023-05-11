@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"log"
 	"strconv"
 	"strings"
 	"yandex-team.ru/bstask/db/schemas"
@@ -25,7 +24,7 @@ func (scanner *rowsScanner) ScanCourierData() (schemas.CourierDto, error) {
 
 	err := scanner.rows.Scan(&res.CourierId, &res.CourierType, &regions, &workingHours)
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 
 	res.Regions, err = stringToInt32Slice(bytesToString(regions))
@@ -41,7 +40,7 @@ func (scanner *rowScanner) ScanCourierData() (schemas.CourierDto, error) {
 
 	err := scanner.row.Scan(&res.CourierId, &res.CourierType, &regions, &workingHours)
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 
 	res.Regions, err = stringToInt32Slice(bytesToString(regions))
@@ -57,7 +56,7 @@ func (scanner *rowScanner) ScanOrderData() (schemas.OrderDto, error) {
 
 	err := scanner.row.Scan(&res.OrderId, &res.Weight, &res.Region, &deliveryHours, &res.Cost, &completedTime)
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 
 	res.DeliveryHours = stringToStringSlice(bytesToString(deliveryHours))
@@ -73,7 +72,7 @@ func (scanner *rowsScanner) ScanOrderData() (schemas.OrderDto, error) {
 
 	err := scanner.rows.Scan(&res.OrderId, &res.Weight, &res.Region, &deliveryHours, &res.Cost, &completedTime)
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 
 	res.DeliveryHours = stringToStringSlice(bytesToString(deliveryHours))

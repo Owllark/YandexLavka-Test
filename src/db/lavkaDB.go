@@ -24,11 +24,11 @@ func (l *LavkaDatabase) Connect(user, password, dbname, host string) error {
 // GetCourierByID returns courier data as schemas.CourierDto for the given courier id, and error
 func (l *LavkaDatabase) GetCourierByID(id int64) (schemas.CourierDto, error) {
 	var res schemas.CourierDto
-	row := l.db.QueryRow("SELECT * FROM couriers WHERE courier_id=$1", strconv.FormatInt(id, 10))
+	row := l.db.QueryRow("SELECT courier_id, type, regions, working_hours FROM couriers WHERE courier_id=$1", strconv.FormatInt(id, 10))
 	scanRow := rowScanner{row}
 	res, err := scanRow.ScanCourierData()
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 
 	return res, err
@@ -37,7 +37,7 @@ func (l *LavkaDatabase) GetCourierByID(id int64) (schemas.CourierDto, error) {
 // GetCouriers returns array of schemas.CourierDto and error
 func (l *LavkaDatabase) GetCouriers() ([]schemas.CourierDto, error) {
 	var res []schemas.CourierDto
-	rows, err := l.db.Query("SELECT * FROM couriers")
+	rows, err := l.db.Query("SELECT courier_id, type, regions, working_hours FROM couriers")
 	for rows.Next() {
 		scanRows := rowsScanner{
 			rows,
@@ -61,7 +61,7 @@ func (l *LavkaDatabase) GetCouriers() ([]schemas.CourierDto, error) {
 // and returns inserted schemas.CourierDto and error
 func (l *LavkaDatabase) InsertCourier(c schemas.CreateCourierDto) (schemas.CourierDto, error) {
 	row := l.db.QueryRow(
-		"INSERT INTO couriers (type, regions, working_hours) VALUES($1, $2, $3) RETURNING id, type, regions, working_hours",
+		"INSERT INTO couriers (type, regions, working_hours) VALUES($1, $2, $3) RETURNING courier_id, type, regions, working_hours",
 		c.CourierType,
 		int32SliceToUint8Array(c.Regions),
 		stringSliceToUint8Array(c.WorkingHours),
@@ -74,11 +74,11 @@ func (l *LavkaDatabase) InsertCourier(c schemas.CreateCourierDto) (schemas.Couri
 // GetOrderByID returns order data as schemas.OrderDto for the given order id, and error
 func (l *LavkaDatabase) GetOrderByID(id int64) (schemas.OrderDto, error) {
 	var res schemas.OrderDto
-	row := l.db.QueryRow("SELECT * FROM orders WHERE order_id=$1", strconv.FormatInt(id, 10))
+	row := l.db.QueryRow("SELECT order_id, weight, region, delivery_hours, cost, completed_time FROM orders WHERE order_id=$1", strconv.FormatInt(id, 10))
 	scanRow := rowScanner{row}
 	res, err := scanRow.ScanOrderData()
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 
 	return res, err
@@ -87,7 +87,7 @@ func (l *LavkaDatabase) GetOrderByID(id int64) (schemas.OrderDto, error) {
 // GetOrders returns all couriers data from table as slice of schemas.OrderDto
 func (l *LavkaDatabase) GetOrders() ([]schemas.OrderDto, error) {
 	var res []schemas.OrderDto
-	rows, err := l.db.Query(fmt.Sprintf("SELECT * FROM orders"))
+	rows, err := l.db.Query(fmt.Sprintf("SELECT order_id, weight, region, delivery_hours, cost, completed_time FROM orders"))
 	for rows.Next() {
 		scanRows := rowsScanner{
 			rows,
@@ -101,7 +101,7 @@ func (l *LavkaDatabase) GetOrders() ([]schemas.OrderDto, error) {
 	}
 	err = rows.Err()
 	if err != nil {
-		log.Fatal(err)
+		return res, err
 	}
 	return res, err
 }
@@ -119,6 +119,22 @@ func (l *LavkaDatabase) InsertOrder(order schemas.CreateOrderDto) (schemas.Order
 	scanRow := rowScanner{row}
 	res, err := scanRow.ScanOrderData()
 	return res, err
+}
+
+func (l *LavkaDatabase) SetOrderCompleteTime(id int64, time string) error {
+	_, err := l.db.Exec("UPDATE orders SET completed_time = $1 WHERE order_id = $2", []byte(time), id)
+	return err
+}
+
+func (l *LavkaDatabase) InsertCompletedOrder(complete schemas.CompleteOrder) error {
+	row := l.db.QueryRow(
+		"INSERT INTO completed_orders (courier_id, order_id, complete_time) VALUES($1, $2, $3)",
+		complete.CourierId,
+		complete.OrderID,
+		[]byte(complete.CompleteTime),
+	)
+	err := row.Scan()
+	return err
 }
 
 /*

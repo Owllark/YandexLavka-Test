@@ -69,7 +69,7 @@ func getCouriers(ctx echo.Context) error {
 func createCourier(ctx echo.Context) error {
 	var request schemas.CreateCourierRequest
 	var response schemas.CreateCourierResponse
-	err := ctx.Bind(&request)
+	err := ctx.Bind(&request.Couriers)
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
@@ -145,7 +145,7 @@ func getOrderByID(ctx echo.Context) error {
 func createOrder(ctx echo.Context) error {
 	var request schemas.CreateOrderRequest
 	var response []schemas.OrderDto
-	err := ctx.Bind(&request)
+	err := ctx.Bind(&request.Orders)
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
@@ -161,8 +161,22 @@ func createOrder(ctx echo.Context) error {
 }
 
 func completeOrder(ctx echo.Context) error {
-
-	return nil
+	var request schemas.CompleteOrderRequestDto
+	var response []schemas.OrderDto
+	err := ctx.Bind(&request.CompleteInfo)
+	if err != nil {
+		return echo.NewHTTPError(400)
+	}
+	for _, complete := range request.CompleteInfo {
+		err := database.SetOrderCompleteTime(complete.OrderID, complete.CompleteTime)
+		if err != nil {
+			return echo.NewHTTPError(400)
+		}
+		order, _ := database.GetOrderByID(complete.OrderID)
+		response = append(response, order)
+		database.InsertCompletedOrder(complete)
+	}
+	return ctx.JSON(200, response)
 }
 
 func ordersAssign() {
