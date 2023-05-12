@@ -21,8 +21,8 @@ func (l *LavkaDatabase) Connect(user, password, dbname, host string) error {
 	return err
 }
 
-// GetCourierByID returns courier data as schemas.CourierDto for the given courier id, and error
-func (l *LavkaDatabase) GetCourierByID(id int64) (schemas.CourierDto, error) {
+// GetCourierById returns courier data as schemas.CourierDto for the given courier id, and error
+func (l *LavkaDatabase) GetCourierById(id int64) (schemas.CourierDto, error) {
 	var res schemas.CourierDto
 	row := l.db.QueryRow("SELECT courier_id, type, regions, working_hours FROM couriers WHERE courier_id=$1", strconv.FormatInt(id, 10))
 	scanRow := rowScanner{row}
@@ -71,8 +71,8 @@ func (l *LavkaDatabase) InsertCourier(c schemas.CreateCourierDto) (schemas.Couri
 	return res, err
 }
 
-// GetOrderByID returns order data as schemas.OrderDto for the given order id, and error
-func (l *LavkaDatabase) GetOrderByID(id int64) (schemas.OrderDto, error) {
+// GetOrderById returns order data as schemas.OrderDto for the given order id, and error
+func (l *LavkaDatabase) GetOrderById(id int64) (schemas.OrderDto, error) {
 	var res schemas.OrderDto
 	row := l.db.QueryRow("SELECT order_id, weight, region, delivery_hours, cost, completed_time FROM orders WHERE order_id=$1", strconv.FormatInt(id, 10))
 	scanRow := rowScanner{row}
@@ -137,8 +137,56 @@ func (l *LavkaDatabase) InsertCompletedOrder(complete schemas.CompleteOrder) err
 	return err
 }
 
-/*
+func (l *LavkaDatabase) CountCourierEarnings(id int64, startDate string, endDate string) (int32, error) {
+	var res int32
+	row := l.db.QueryRow("SELECT SUM(orders.cost) * \n"+
+		"(SELECT CASE WHEN type = 'FOOT' THEN 2\n"+
+		"WHEN type = 'BIKE' THEN 3\n"+
+		"WHEN type = 'AUTO' THEN 4\n"+
+		"ELSE -1\n"+
+		"END\n"+
+		"FROM couriers\n"+
+		"WHERE courier_id = 1\n"+
+		"AS earnings\n"+
+		"FROM completed_orders\n"+
+		"JOIN orders ON completed_orders.order_id = orders.order_id\n"+
+		"WHERE completed_orders.courier_id = $1\n"+
+		"AND completed_orders.complete_time >= $2\n"+
+		"AND completed_orders.complete_time < $3;",
+		id,
+		[]byte(startDate),
+		[]byte(endDate),
+	)
+	err := row.Scan(&res)
+	// Here must be more smart error handling to separate database error and error when reading NULL value
+	if err != nil {
+		res = 0
+		err = nil
+	}
+	return res, err
+}
 
-func (l *LavkaDatabase) MarkOrderAsCompleted() error {
-
-}*/
+func (l *LavkaDatabase) CountCourierRating(id int64, startDate string, endDate string) (int32, error) {
+	var res float32
+	row := l.db.QueryRow("SELECT (COUNT(*)::FLOAT / EXTRACT(EPOCH FROM (MAX(complete_time) - MIN(complete_time))) / 3600) * \n"+
+		"CASE WHEN type = 'FOOT' THEN 3\n"+
+		"WHEN type = 'BIKE' THEN 2\n"+
+		"WHEN type = 'AUTO' THEN 1\n"+
+		"ELSE -1\n"+
+		"END AS rating\n"+
+		"FROM completed_orders\n"+
+		"JOIN couriers ON completed_orders.courier_id = couriers.id\n"+
+		"WHERE completed_orders.courier_id = $1\n"+
+		"WHERE $2 >= 'start_date' AND $3 < 'end_date';",
+		id,
+		[]byte(startDate),
+		[]byte(endDate),
+	)
+	err := row.Scan(&res)
+	// Here must be more smart error handling to separate database error and error when reading NULL value
+	if err != nil {
+		res = 0
+		err = nil
+	}
+	return int32(res), err
+}

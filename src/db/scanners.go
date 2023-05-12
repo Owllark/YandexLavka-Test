@@ -54,7 +54,7 @@ func (scanner *rowScanner) ScanOrderData() (schemas.OrderDto, error) {
 	var deliveryHours []uint8
 	var completedTime []uint8
 
-	err := scanner.row.Scan(&res.OrderId, &res.Weight, &res.Region, &deliveryHours, &res.Cost, &completedTime)
+	err := scanner.row.Scan(&res.OrderId, &res.Weight, &res.Region, &deliveryHours, &res.Cost)
 	if err != nil {
 		return res, err
 	}

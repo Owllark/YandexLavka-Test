@@ -6,21 +6,17 @@ import (
 	"yandex-team.ru/bstask/db/schemas"
 )
 
-// getCourierByID handles GET /couriers/:courier_id request
+// getCourierById handles GET /couriers/:courier_id request
 // takes echo.Context as an argument and returns response 200 with json encoded courier data
 // or 400 (BadRequest) in case of error
-func getCourierByID(ctx echo.Context) error {
+func getCourierById(ctx echo.Context) error {
 	courierID, err := strconv.ParseInt(ctx.Param("courier_id"), 10, 64)
-	courierData, err := database.GetCourierByID(courierID)
+	courierData, err := database.GetCourierById(courierID)
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
 
 	return ctx.JSON(200, courierData)
-
-}
-
-func getCourierMetaInfo() {
 
 }
 
@@ -69,7 +65,7 @@ func getCouriers(ctx echo.Context) error {
 func createCourier(ctx echo.Context) error {
 	var request schemas.CreateCourierRequest
 	var response schemas.CreateCourierResponse
-	err := ctx.Bind(&request.Couriers)
+	err := ctx.Bind(&request)
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
@@ -125,13 +121,13 @@ func getOrders(ctx echo.Context) error {
 	return ctx.JSON(200, ordersData[offset:offset+limit])
 }
 
-// getOrderByID handles GET /orders/:order_id request
+// getOrderById handles GET /orders/:order_id request
 // takes echo.Context as an argument and returns response 200 with json encoded order data
 // or 400 (BadRequest) in case of error
-func getOrderByID(ctx echo.Context) error {
+func getOrderById(ctx echo.Context) error {
 
 	orderID, err := strconv.ParseInt(ctx.Param("order_id"), 10, 64)
-	orderData, err := database.GetOrderByID(orderID)
+	orderData, err := database.GetOrderById(orderID)
 	if err != nil {
 		return err
 	}
@@ -145,7 +141,7 @@ func getOrderByID(ctx echo.Context) error {
 func createOrder(ctx echo.Context) error {
 	var request schemas.CreateOrderRequest
 	var response []schemas.OrderDto
-	err := ctx.Bind(&request.Orders)
+	err := ctx.Bind(&request)
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
@@ -172,11 +168,42 @@ func completeOrder(ctx echo.Context) error {
 		if err != nil {
 			return echo.NewHTTPError(400)
 		}
-		order, _ := database.GetOrderByID(complete.OrderID)
+		order, _ := database.GetOrderById(complete.OrderID)
 		response = append(response, order)
 		database.InsertCompletedOrder(complete)
 	}
 	return ctx.JSON(200, response)
+}
+
+func getCourierMetaInfo(ctx echo.Context) error {
+	var response schemas.GetCourierMetaInfoResponse
+	startDate := ctx.QueryParam("start_date")
+	endDate := ctx.QueryParam("end_date")
+	id, err := strconv.ParseInt(ctx.Param("courier_id"), 10, 64)
+	if err != nil {
+		return echo.NewHTTPError(400)
+	}
+	courier, err := database.GetCourierById(id)
+	if err != nil {
+		return echo.NewHTTPError(400)
+	}
+	earnings, err := database.CountCourierEarnings(id, startDate, endDate)
+	if err != nil {
+		return echo.NewHTTPError(400)
+	}
+	rating, err := database.CountCourierRating(id, startDate, endDate)
+	if err != nil {
+		return echo.NewHTTPError(400)
+	}
+	response.CourierId = courier.CourierId
+	response.CourierType = courier.CourierType
+	response.WorkingHours = courier.WorkingHours
+	response.Regions = courier.Regions
+	response.Earnings = earnings
+	response.Rating = rating
+
+	return ctx.JSON(200, response)
+
 }
 
 func ordersAssign() {

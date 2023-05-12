@@ -1,0 +1,22 @@
+GET http://localhost:8080/couriers/meta-info/1?start_date='2023-05-28'&end_date='2023-06-28'
+Accept: application/json
+
+###
+
+GET http://localhost:8080/orders
+Accept: application/json
+
+###
+GET http://localhost:8080/couriers?limit=2
+Accept: application/json
+
+###
+GET http://localhost:8080/couriers?limit=1
+Accept: application/json
+
+###
+GET http://localhost:8080/orders/1
+Accept: application/json
+
+###
+

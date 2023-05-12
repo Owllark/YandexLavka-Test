@@ -1,0 +1,54 @@
+POST http://localhost:8080/orders
+Content-Type: application/json
+
+{"orders":[{"weight":42.5,"region":7,"delivery___hours":["11:00","17:00"],"cost":350}]}
+
+
+###
+POST http://localhost:8080/couriers
+Content-Type: application/json
+
+[
+{
+  "courier_type": "AUTO",
+  "regions": [8,7,6],
+  "working_hours": ["9:00","11:00"]
+}
+]
+
+###
+POST http://localhost:8080/couriers
+Content-Type: application/json
+
+
+{
+  "couriers":
+  [
+    {
+      "courier_type": "FOOT",
+      "regions": [
+        1
+      ],
+      "working_hours": [
+        "08:00",
+        "16:00"
+      ]
+    },
+    {
+      "courier_type": "AUTO",
+      "regions": [
+        1,
+        2,
+        3
+      ],
+      "working_hours": [
+        "10:00",
+        "18:00"
+      ]
+    }
+  ]
+
+}
+
+
+###

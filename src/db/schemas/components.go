@@ -87,7 +87,7 @@ type GetCouriersResponse struct {
 type GetCourierMetaInfoResponse struct {
 	CourierId    int64    `json:"courier_id,omitempty"`
 	CourierType  string   `json:"courier_type,omitempty"`
-	Regions      int32    `json:"regions,omitempty"`
+	Regions      []int32  `json:"regions,omitempty"`
 	WorkingHours []string `json:"working_hours,omitempty"`
 	Rating       int32    `json:"rating,omitempty"`
 	Earnings     int32    `json:"earnings,omitempty"`
