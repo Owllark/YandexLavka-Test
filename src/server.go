@@ -19,7 +19,7 @@ const (
 	DbUser     = "postgres"
 	DbPassword = "password"
 	DbName     = "lavka"
-	DbHost     = "localhost"
+	DbHost     = "db"
 )
 
 func setupServer() (*echo.Echo, error) {

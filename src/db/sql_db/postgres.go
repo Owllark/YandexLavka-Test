@@ -7,22 +7,32 @@ import (
 )
 
 type PostgreSQLDatabase struct {
-	conn *sql.DB
+	Conn *sql.DB
 	PostgreSQLQuery
 }
 
-func (p *PostgreSQLDatabase) Connect(user, password, dbname, host string) error {
-	db, err := sql.Open("postgres", fmt.Sprintf("user=%s password=%s dbname=%s host=%s sslmode=disable", user, password, dbname, host))
+func (p *PostgreSQLDatabase) ConnectToHost(user, password, host string) error {
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=5432 user=%s password=%s sslmode=disable", host, user, password))
 	if err != nil {
 		return err
 	}
-	p.conn = db
+	p.Conn = db
+	p.queryConn = db
+	return nil
+}
+
+func (p *PostgreSQLDatabase) Connect(user, password, dbname, host string) error {
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s port=5432 user=%s password=%s dbname=%s sslmode=disable", host, user, password, dbname))
+	if err != nil {
+		return err
+	}
+	p.Conn = db
 	p.queryConn = db
 	return nil
 }
 
 func (p *PostgreSQLDatabase) Close() error {
-	return p.conn.Close()
+	return p.Conn.Close()
 }
 
 type PostgreSQLQuery struct {

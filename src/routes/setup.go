@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	database = new(db.LavkaDatabase)
+	database = new(db.LavkaDatabasePG)
 )
 
 func ConnectWithDataBase(user, password, dbname, host string) error {
@@ -20,21 +20,17 @@ func ConnectWithDataBase(user, password, dbname, host string) error {
 func SetupRoutes(e *echo.Echo) {
 
 	// Create a rate newLimiter with a restriction of 10 requests per second (RPS)
-	var newLimiter = tollbooth.NewLimiter(100, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second}) // Apply rate newLimiter middleware to all routes
+	var newLimiter = tollbooth.NewLimiter(10, &limiter.ExpirableOptions{DefaultExpirationTTL: time.Second}) // Apply rate newLimiter middleware to all routes
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			httpError := tollbooth.LimitByRequest(newLimiter, c.Response(), c.Request())
 			if httpError != nil {
-				c.Response().Header().Del("RateLimit-Limit")
-				c.Response().Header().Del("RateLimit-Remaining")
-				c.Response().Header().Del("RateLimit-Reset")
 				return echo.NewHTTPError(429)
 			}
 			return next(c)
 		}
 	})
 
-	e.GET("/ping", ping)
 	e.POST("/couriers", createCourier)
 	e.GET("/couriers/:courier_id", getCourierById)
 	e.GET("/couriers", getCouriers)

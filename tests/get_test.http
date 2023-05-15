@@ -1,4 +1,4 @@
-GET http://localhost:8080/couriers/meta-info/1?start_date='2023-05-28'&end_date='2023-06-28'
+GET http://localhost:8080/couriers/meta-info/1?start_date='2023-05-01'&end_date='2023-06-01'
 Accept: application/json
 
 ###

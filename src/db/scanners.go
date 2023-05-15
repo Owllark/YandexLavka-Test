@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-	"yandex-team.ru/bstask/db/schemas"
+	"yandex-team.ru/bstask/schemas"
 )
 
 type rowsScanner struct {
@@ -54,7 +54,7 @@ func (scanner *rowScanner) ScanOrderData() (schemas.OrderDto, error) {
 	var deliveryHours []uint8
 	var completedTime []uint8
 
-	err := scanner.row.Scan(&res.OrderId, &res.Weight, &res.Region, &deliveryHours, &res.Cost)
+	err := scanner.row.Scan(&res.OrderId, &res.Weight, &res.Region, &deliveryHours, &res.Cost, &completedTime)
 	if err != nil {
 		return res, err
 	}

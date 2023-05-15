@@ -3,7 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"example.com/src/db/schemas"
+	"example.com/src/schemas"
 	"fmt"
 	"github.com/stretchr/testify/require"
 	"io"

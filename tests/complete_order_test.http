@@ -1,0 +1,33 @@
+POST http://localhost:8080/orders/complete
+Content-Type: application/json
+
+{
+  "complete_info":
+  [
+    {
+      "courier_id" : 1,
+      "order_id" : 2,
+      "complete_time": "2023-05-13 10:00:00"
+    },
+    {
+      "courier_id" : 1,
+      "order_id" : 1,
+      "complete_time": "2023-05-13 10:00:00"
+    },
+    {
+      "courier_id" : 2,
+      "order_id" : 3,
+      "complete_time": "2023-05-13 10:00:00"
+    },
+    {
+      "courier_id" : 2,
+      "order_id" : 4,
+      "complete_time": "2023-05-13 10:00:00"
+    },
+    {
+      "courier_id" : 20,
+      "order_id" : 6,
+      "complete_time": "2023-05-13 10:00:00"
+    }
+  ]
+}

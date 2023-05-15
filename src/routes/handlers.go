@@ -3,7 +3,7 @@ package routes
 import (
 	echo "github.com/labstack/echo/v4"
 	"strconv"
-	"yandex-team.ru/bstask/db/schemas"
+	"yandex-team.ru/bstask/schemas"
 )
 
 // getCourierById handles GET /couriers/:courier_id request
@@ -24,6 +24,7 @@ func getCourierById(ctx echo.Context) error {
 // takes echo.Context as an argument and returns response 200 with json encoded array of courier data
 // or 400 (BadRequest) in case of error
 func getCouriers(ctx echo.Context) error {
+	var res schemas.GetCouriersResponse
 	offsetStr := ctx.QueryParam("offset")
 	limitStr := ctx.QueryParam("limit")
 	var offset, limit int
@@ -49,13 +50,16 @@ func getCouriers(ctx echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
+	res.Limit = int32(limit)
+	res.Offset = int32(offset)
 	if offset >= len(couriersData) {
-		return ctx.NoContent(200)
+		res.Couriers = nil
+	} else if offset+limit >= len(couriersData) {
+		res.Couriers = couriersData[offset:]
+	} else {
+		res.Couriers = couriersData[offset : offset+limit]
 	}
-	if offset+limit > len(couriersData) {
-		return ctx.JSON(200, couriersData[offset:])
-	}
-	return ctx.JSON(200, couriersData[offset:offset+limit])
+	return ctx.JSON(200, res)
 
 }
 
@@ -156,15 +160,33 @@ func createOrder(ctx echo.Context) error {
 	return ctx.JSON(200, response)
 }
 
+// completeOrder handles POST /orders/complete request
+// takes echo.Context as an argument and returns response 200 with json encoded array of completed orders
+// or 400 (BadRequest) in case of error
 func completeOrder(ctx echo.Context) error {
 	var request schemas.CompleteOrderRequestDto
 	var response []schemas.OrderDto
-	err := ctx.Bind(&request.CompleteInfo)
+	err := ctx.Bind(&request)
 	if err != nil {
 		return echo.NewHTTPError(400)
 	}
 	for _, complete := range request.CompleteInfo {
-		err := database.SetOrderCompleteTime(complete.OrderID, complete.CompleteTime)
+		_, err := database.GetOrderById(complete.OrderID)
+		if err != nil {
+			return echo.NewHTTPError(400)
+		}
+		_, err = database.GetCourierById(complete.CourierId)
+		if err != nil {
+			return echo.NewHTTPError(400)
+		}
+	}
+	for _, complete := range request.CompleteInfo {
+
+		err = database.DeleteCompletedOrder(complete.OrderID)
+		if err != nil {
+			return echo.NewHTTPError(400)
+		}
+		err = database.SetOrderCompleteTime(complete.OrderID, complete.CompleteTime)
 		if err != nil {
 			return echo.NewHTTPError(400)
 		}
@@ -175,6 +197,9 @@ func completeOrder(ctx echo.Context) error {
 	return ctx.JSON(200, response)
 }
 
+// completeOrder handles GET /couriers/meta-info/:courier_id request
+// takes echo.Context as an argument and returns response 200 with json encoded data about courier and his earnings and ratings
+// or 400 (BadRequest) in case of error
 func getCourierMetaInfo(ctx echo.Context) error {
 	var response schemas.GetCourierMetaInfoResponse
 	startDate := ctx.QueryParam("start_date")
@@ -203,13 +228,5 @@ func getCourierMetaInfo(ctx echo.Context) error {
 	response.Rating = rating
 
 	return ctx.JSON(200, response)
-
-}
-
-func ordersAssign() {
-
-}
-
-func couriersAssignment() {
 
 }

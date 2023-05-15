@@ -3,7 +3,7 @@ package schemas
 type CreateOrderDto struct {
 	Weight        float32  `json:"weight,omitempty"`
 	Region        int32    `json:"region,omitempty"`
-	DeliveryHours []string `json:"delivery___hours,omitempty"`
+	DeliveryHours []string `json:"delivery_hours,omitempty"`
 	Cost          int32    `json:"cost,omitempty"`
 }
 
@@ -15,9 +15,9 @@ type OrderDto struct {
 	OrderId       int64    `json:"order_id"`
 	Weight        float32  `json:"weight,omitempty"`
 	Region        int32    `json:"region,omitempty"`
-	DeliveryHours []string `json:"delivery___hours,omitempty"`
+	DeliveryHours []string `json:"delivery_hours,omitempty"`
 	Cost          int32    `json:"cost,omitempty"`
-	CompletedTime string   `json:"completed___time,omitempty"`
+	CompletedTime string   `json:"completed_time,omitempty"`
 }
 
 type GroupOrders struct {

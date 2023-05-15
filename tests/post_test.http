@@ -1,7 +1,7 @@
 POST http://localhost:8080/orders
 Content-Type: application/json
 
-{"orders":[{"weight":42.5,"region":7,"delivery___hours":["11:00","17:00"],"cost":350}]}
+{"orders":[{"weight":42.5,"region":7,"delivery_hours":["11:00","17:00"],"cost":350}]}
 
 
 ###
